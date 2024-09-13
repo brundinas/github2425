@@ -1,8 +1,17 @@
 const sqlite3 = require('better-sqlite3')
+const path = require('path')
 const db = sqlite3('./studietid.db', {verbose: console.log})
+const express = require('express')
+const app = express()
+
+const staticPath = path.join(__dirname, 'public')
+app.use(express.urlencoded({ extended: true })) // To parse urlencoded parameters
+app.use(express.json()); // To parse JSON bodies
 
 
-
+app.get('/', (req, res) => {
+    res.sendFile(path.join(staticPath, 'app.html'))
+})
 
 
 function checkValidEmailFormat(email) {
@@ -89,14 +98,40 @@ function checkEmailregex(email) {
 
 }
 
+
+app.post('/adduser', (req, res) => {
+    const { firstName, lastName, email } = req.body;
+
+    // Validate email format and check if email already exists
+    if (!checkValidEmailFormat(email)) {
+        return res.json({ error: 'Invalid email format.' });
+    }
+    else 
+    if (!checkEmailExists(email)) {
+        //return res.json({ error: 'Email already exists.' });
+
+        res.redirect('/app.html?errorMsg=EmailExist');
+    }
+    else {
+        // Insert new user
+        const newUser = addUser(firstName, lastName, 2, 0, email);
+
+        if (!newUser) {
+            return res.json({ error: 'Failed to register user.' });
+        }
+        app.get('/', (req, res) => {
+            res.sendFile(path.join(staticPath, 'app.html'))
+        })
+        //return res.json({ message: 'User registered successfully!', user: newUser });
+}
+    
+
+});
+
 function addUser(firstName, lastName, idRole, isAdmin, email)
  {
 
 
-    let result = checkValidEmailFormat(email) && checkEmailExists(email)
-    if (!result) {
-        return null;
-    }
     sql = db.prepare("INSERT INTO user (firstName, lastName, idRole, isAdmin, email) " +
                          "values (?, ?, ?, ?, ?)")
     const info = sql.run(firstName, lastName, idRole, isAdmin, email)
@@ -109,15 +144,19 @@ function addUser(firstName, lastName, idRole, isAdmin, email)
     return rows[0]
 }
 
-function getUsers(){
-    console.log('/getUsers/')
+app.get('/getusers/', (req, resp) => {
+    console.log('/getusers/')
 
     const sql = db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
         'FROM user inner join role on user.idrole = role.id ');
-    let rows = sql.all()   
-    console.log("rows.length", rows.length)
+    let users = sql.all()   
+    console.log("users.length", users.length)
     
-    return rows
-}
+    resp.send(users)
+})
 
 
+app.use(express.static(staticPath));
+app.listen(3000, () => {
+    console.log('Server is running on http://localhost:3000');
+})
