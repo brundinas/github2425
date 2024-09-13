@@ -119,9 +119,9 @@ app.post('/adduser', (req, res) => {
         if (!newUser) {
             return res.json({ error: 'Failed to register user.' });
         }
-        app.get('/', (req, res) => {
-            res.sendFile(path.join(staticPath, 'app.html'))
-        })
+    
+        res.sendFile(path.join(staticPath, 'app.html'))
+
         //return res.json({ message: 'User registered successfully!', user: newUser });
 }
     
