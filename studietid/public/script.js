@@ -1,25 +1,77 @@
-fetchUsers()
 
-const params = new URLSearchParams(window.location.search);
-// Retrieve individual parameters
-const errorMsg = params.get('errorMsg'); 
-console.log(errorMsg)
+fetchData();
 
-async function fetchUsers() {
+async function fetchData() {
+
+    const rooms = await fetchRooms();
+    populateRooms(rooms);
+    const subcject = await fetchSubjects()
+    const activities = await fetchActivity()
+
+
+}
+
+
+function populateRooms(rooms) {
+    const select = document.getElementById('roomSelect');
+    rooms.forEach(room => {
+        const option = document.createElement('option');
+        option.value = room.id;
+        option.textContent = room.name;
+        select.appendChild(option);
+    });
+}
+
+
+
+async function fetchActivity() {
     try {
         // Fetch API brukes for å hente data fra URLen
-        let response = await fetch('/getusers/'); // Hente brukere fra studietidDB
+        let response = await fetch('/getactivites/'); // Hente brukere fra studietidDB
         let data = await response.json(); // Konverterer responsen til JSON
 
         // Nå må vi iterere gjennom data.results, ikke data direkte
         for (let i = 0; i < data.length; i++) {
             console.log(data[i]);
         }
-
+        return data
     } catch (error) {
         console.error('Error:', error); // Håndterer eventuelle feil
     }
 }
+
+async function fetchRooms() {
+    try {
+        // Fetch API brukes for å hente data fra URLen
+        let response = await fetch('/getrooms/'); // Hente brukere fra studietidDB
+        let data = await response.json(); // Konverterer responsen til JSON
+
+        // Nå må vi iterere gjennom data.results, ikke data direkte
+        for (let i = 0; i < data.length; i++) {
+            console.log(data[i]);
+        }
+        return data
+    } catch (error) {
+        console.error('Error:', error); // Håndterer eventuelle feil
+    }
+}
+
+async function fetchSubjects() {
+    try {
+        // Fetch API brukes for å hente data fra URLen
+        let response = await fetch('/getsubjects/'); // Hente brukere fra studietidDB
+        let data = await response.json(); // Konverterer responsen til JSON
+
+        // Nå må vi iterere gjennom data.results, ikke data direkte
+        for (let i = 0; i < data.length; i++) {
+            console.log(data[i]);
+        }
+        return data
+    } catch (error) {
+        console.error('Error:', error); // Håndterer eventuelle feil
+    }
+}
+
 
 const regForm = document.getElementById('registerForm')
 //regForm.addEventListener('submit', adduser)

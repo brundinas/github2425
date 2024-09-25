@@ -2,26 +2,35 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="style.css">
+ 
     <title>Studietid</title>
 </head>
 <body>
+    <script src="./script.js"></script>
     <h1>Studietid</h1>
+    <a href="http://localhost:3000/admin/">Admin</a>
 
     <div class="container">
-        <h2>Register New User</h2>
-        <form id="registerForm" action="/adduser" method="POST">
+        <h2>Ny studietime</h2>
+        <form id="registerForm" action="/regactivity" method="POST">
 
-            <input type="text" id="firstName" name="firstName" placeholder="Fornavn" required>
-            <input type="text" id="lastName" name="lastName" placeholder="Etternavn" required>
+            <label for="roomSelect">Klasserom:</label>
+            <select id="roomSelect" name="roomSelect">
+            </select>
+            <label for="subjectSelect">Fag:</label>
+            <select id="subjectSelect" name="subjectSelect">
+            </select>
             <input type="email" id="email" name="email" placeholder="Email" required>
+            <input type="datetime-local" id="startTime" name="startTime" placeholder="Starttidspunkt" required>
             <button type="submit">Register</button>
         </form>
-        <div class="error" id="error"></div>
-        <div class="success" id="success"></div>
+  
+        
+    
+        
+
     </div>
 
-    <script src="./script.js"></script>
+
 </body>
 </html>

@@ -13,66 +13,12 @@ app.get('/', (req, res) => {
     res.sendFile(path.join(staticPath, 'app.html'))
 })
 
+app.get('/admin/', (req, res) => {
+    console.log('admin')
+    res.sendFile(path.join(staticPath, 'admin.html'))
+})
 
-function checkValidEmailFormat(email) {
 
-    // Step 1: Split the email into two parts: local part and domain part
-    let parts = email.split('@');
-
-    // Email should have exactly one "@" symbol
-    if (parts.length !== 2) {
-        return false;
-    }
-
-    let localPart = parts[0];
-    let domainPart = parts[1];
-
-    // Step 2: Ensure neither the local part nor the domain part is empty
-    if (localPart.length === 0 || domainPart.length === 0) {
-        return false;
-    }
-
-    // Step 3: Check if domain part contains a "."
-    if (!domainPart.includes('.')) {
-        return false;
-    }
-
-    // Step 4: Split the domain into name and extension
-    let domainParts = domainPart.split('.');
-
-    // Ensure there is both a domain name and an extension
-    if (domainParts.length < 2) {
-        return false;
-    }
-
-    let domainName = domainParts[0];
-    let domainExtension = domainParts[1];
-
-    // Step 5: Validate that both the domain name and extension are non-empty
-    if (!domainName || !domainExtension) {
-        return false;
-    }
-
-    // Step 6: Ensure domain extension is at least 2 characters long (e.g., ".com")
-    if (domainExtension.length < 2) {
-        return false;
-    }
-
-    // Step 7: Additional checks (optional)
-    // - Local part should not start or end with a special character
-    if (localPart.startsWith('.') || localPart.endsWith('.')) {
-        return false;
-    }
-
-    // - Domain name should not start or end with a special character
-    if (domainName.startsWith('-') || domainName.endsWith('-')) {
-        return false;
-    }
-
-    // If all checks pass, return true
-    return true;
-
-}
 
 function checkEmailExists(email) {
 
@@ -87,13 +33,14 @@ function checkEmailExists(email) {
 
 }
 
-function checkEmailregex(email) {
+function checkValidEmailFormat(email) {
     const emailRegex = /^[^\s@\.][^\s@]*@[^\s@]+\.[^\s@]+$/;
     let result = emailRegex.test(email);
  
     if (!result) {
         return false;
     }
+    else return true
 
 
 }
@@ -155,6 +102,42 @@ app.get('/getusers/', (req, resp) => {
     resp.send(users)
 })
 
+app.get('/getrooms/', (req, resp) => {
+    console.log('/getrooms/')
+
+    const sql = db.prepare('select id, name  from room');
+    let data = sql.all()   
+    console.log("data.length", data.length)
+    
+    resp.send(data)
+})
+
+app.get('/getsubjects/', (req, resp) => {
+    console.log('/getsubjects/')
+
+    const sql = db.prepare('select id, name from subject');
+    let data = sql.all()   
+    console.log("data.length", data.length)
+    
+    resp.send(data)
+})
+
+
+app.get('/getactivites/', (req, resp) => {
+    console.log('/getactivities/')
+    const idUser = 1
+    const sql = db.prepare(`SELECT starttime, room.name as rom, subject.name as fag, status.name as status
+                            FROM activity
+                            inner join room on room.id = activity.idRoom
+                            inner join subject on subject.id = activity.idSubject
+                            inner join user on user.id = activity.idUser
+                            inner join status on status.id = activity.idStatus
+                            where user.id = ?`);
+    let activities = sql.all(idUser)   
+    console.log("users.length", activities.length)
+    
+    resp.send(activities)
+})
 
 app.use(express.static(staticPath));
 app.listen(3000, () => {
