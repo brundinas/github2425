@@ -18,7 +18,9 @@ app.get('/admin/', (req, res) => {
     res.sendFile(path.join(staticPath, './admin/'))
 })
 
-
+app.post('/regactivity/', (req, res) => {
+    console.log('regactivity', req.body)
+})
 
 function checkEmailExists(email) {
 
