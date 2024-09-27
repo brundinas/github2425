@@ -15,7 +15,7 @@ app.get('/', (req, res) => {
 
 app.get('/admin/', (req, res) => {
     console.log('admin')
-    res.sendFile(path.join(staticPath, 'admin.html'))
+    res.sendFile(path.join(staticPath, './admin/'))
 })
 
 
