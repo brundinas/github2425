@@ -1,8 +1,10 @@
-const sqlite3 = require('better-sqlite3')
+
 const path = require('path')
-const db = sqlite3('./studietid.db', {verbose: console.log})
+
 const express = require('express')
 const app = express()
+
+const sqlm = require('./sqlm.js');
 
 const staticPath = path.join(__dirname, 'public')
 app.use(express.urlencoded({ extended: true })) // To parse urlencoded parameters
@@ -18,52 +20,42 @@ app.get('/admin/', (req, res) => {
     res.sendFile(path.join(staticPath, './admin/'))
 })
 
-app.post('/regactivity/', (req, res) => {
-    console.log('regactivity', req.body)
+app.post('/addactivity/', (req, res) => {
+    // Insert new activity
+    const { idUser, idRoom, idSubject } = req.body;
+    console.log('addactivity', req.body)
+    const newActivity = sqlm.addActivity(idUser, idRoom, idSubject);
+
+    if (!newActivity) {
+         return res.json({ error: 'Failed to register activty.' });
+    }
+    else res.send(newActivity)    
+     //res.sendFile(path.join(staticPath, 'app.html'))
+    
+        //return res.json({ message: 'User registered successfully!', user: newUser });
+      
+
 })
 
-function checkEmailExists(email) {
 
-    let sql = db.prepare("select count(*)  as count from user where email = ?")
-    let result = sql.get(email);
-    console.log("result.count", result)
-    if (result.count > 0) {
-        console.log("Email already exists")
-        return false;
-    }
-    return true;
-
-}
-
-function checkValidEmailFormat(email) {
-    const emailRegex = /^[^\s@\.][^\s@]*@[^\s@]+\.[^\s@]+$/;
-    let result = emailRegex.test(email);
- 
-    if (!result) {
-        return false;
-    }
-    else return true
-
-
-}
 
 
 app.post('/adduser', (req, res) => {
     const { firstName, lastName, email } = req.body;
 
     // Validate email format and check if email already exists
-    if (!checkValidEmailFormat(email)) {
+    if (!sqlm.checkValidEmailFormat(email)) {
         return res.json({ error: 'Invalid email format.' });
     }
     else 
-    if (!checkEmailExists(email)) {
+    if (!sqlm.checkEmailExists(email)) {
         //return res.json({ error: 'Email already exists.' });
 
         res.redirect('/app.html?errorMsg=EmailExist');
     }
     else {
         // Insert new user
-        const newUser = addUser(firstName, lastName, 2, 0, email);
+        const newUser = sqlm.addUser(firstName, lastName, 2, 0, email);
 
         if (!newUser) {
             return res.json({ error: 'Failed to register user.' });
@@ -77,51 +69,29 @@ app.post('/adduser', (req, res) => {
 
 });
 
-function addUser(firstName, lastName, idRole, isAdmin, email)
- {
 
-
-    sql = db.prepare("INSERT INTO user (firstName, lastName, idRole, isAdmin, email) " +
-                         "values (?, ?, ?, ?, ?)")
-    const info = sql.run(firstName, lastName, idRole, isAdmin, email)
-    
-    sql = db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
-        'FROM user inner join role on user.idrole = role.id   WHERE user.id  = ?');
-    let rows = sql.all(info.lastInsertRowid)  
-    console.log('row inserted', rows[0])
-
-    return rows[0]
-}
 
 app.get('/getusers/', (req, resp) => {
     console.log('/getusers/')
 
-    const sql = db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
-        'FROM user inner join role on user.idrole = role.id ');
-    let users = sql.all()   
-    console.log("users.length", users.length)
+    const users = sqlm.getUsers
     
     resp.send(users)
 })
 
 app.get('/getrooms/', (req, resp) => {
     console.log('/getrooms/')
-
-    const sql = db.prepare('select id, name  from room');
-    let data = sql.all()   
-    console.log("data.length", data.length)
+    rooms = sqlm.getRooms()
     
-    resp.send(data)
+    resp.send(rooms)
 })
 
 app.get('/getsubjects/', (req, resp) => {
     console.log('/getsubjects/')
+    subjects = sqlm.getSubjects()
 
-    const sql = db.prepare('select id, name from subject');
-    let data = sql.all()   
-    console.log("data.length", data.length)
     
-    resp.send(data)
+    resp.send(subjects)
 })
 
 

@@ -2,17 +2,17 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
- 
+    <script src="script.js" defer></script>
     <title>Studietid</title>
 </head>
 <body>
-    <script src="./script.js"></script>
+
     <h1>Studietid</h1>
     <a href="http://localhost:3000/admin/">Admin</a>
 
     <div class="container">
         <h2>Ny studietime</h2>
-        <form id="registerForm" action="/regactivity" method="POST">
+        <form id="registerForm"  method="POST">
 
             <label for="roomSelect">Klasserom:</label>
             <select id="roomSelect" name="roomSelect">
@@ -20,12 +20,24 @@
             <label for="subjectSelect">Fag:</label>
             <select id="subjectSelect" name="subjectSelect">
             </select>
-            <input type="email" id="email" name="email" placeholder="Email" required>
             <input type="datetime-local" id="startTime" name="startTime" placeholder="Starttidspunkt" required>
             <button type="submit">Register</button>
         </form>
   
-        
+    <div id="studietimer">
+        <h3>Dine studietider:</h3>
+        <table id="tableactivity" cellspacing="1em" cellpadding="1em">
+            <tr></tr>
+                <th>Starttidspunkt</th>
+                <th>Klasserom</th>
+                <th>Fag</th>
+                <th>Status</th>
+                <th></th>
+            </tr>
+
+        </table>
+
+    </div>
     
         
 
