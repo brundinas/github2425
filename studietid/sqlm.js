@@ -1,11 +1,11 @@
 // sqlm.js
 const sqlite3 = require('better-sqlite3')
 global.db  = sqlite3('./studietid.db', {verbose: console.log})
-module.exports = {
 
 
 
- checkEmailExists(email) {
+
+ function checkEmailExists(email) {
 
     let sql = global.db.prepare("select count(*)  as count from user where email = ?")
     let result = sql.get(email);
@@ -16,9 +16,9 @@ module.exports = {
     }
     return true;
 
-},
+}
 
-addActivity(idUser, idRoom, idSubject)
+function addActivity(idUser, idRoom, idSubject)
  {
 
     console.log('Adding activity', idUser, idRoom, idSubject);
@@ -49,9 +49,9 @@ addActivity(idUser, idRoom, idSubject)
     console.log('row inserted', row[0])
 
     return row[0]
-},
+}
 
-addUser(firstName, lastName, idRole, isAdmin, email)
+function addUser(firstName, lastName, idRole, isAdmin, email)
  {
 
 
@@ -65,9 +65,23 @@ addUser(firstName, lastName, idRole, isAdmin, email)
     console.log('row inserted', rows[0])
 
     return row
-},
+}
 
-checkValidEmailFormat(email) {
+function getUserByEmail(email) {
+    const sql = global.db.prepare('SELECT user.id as userid, password, firstname, lastname, role.name  as role ' + 
+        'FROM user inner join role on user.idrole = role.id  WHERE email = ?');
+    let user = sql.get(email)   
+    return user
+}
+
+function getUser(id) {
+    const sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
+        'FROM user inner join role on user.idrole = role.id  WHERE user.id = ?');
+    let user = sql.get(id)   
+    return user
+}
+
+function checkValidEmailFormat(email) {
     const emailRegex = /^[^\s@\.][^\s@]*@[^\s@]+\.[^\s@]+$/;
     let result = emailRegex.test(email);
  
@@ -77,26 +91,38 @@ checkValidEmailFormat(email) {
     else return true
 
 
-},
+}
 
-getUsers() {
+function getUsers() {
     const sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
         'FROM user inner join role on user.idrole = role.id ');
     let users = sql.all()   
     return users
-},
+}
 
-getRooms() {
+function getRooms() {
     const sql = global.db.prepare('select id, name  from room');
     let rooms = sql.all()  
     return rooms
 
-},
+}
 
-getSubjects() {
+function getSubjects() {
     const sql = global.db.prepare('select id, name  from subject');
     let subjects = sql.all()  
     return subjects
 }
 
-}
+
+
+module.exports = {
+    getUser,
+    getUserByEmail,
+    getUsers,
+    addUser,
+    checkEmailExists,
+    checkValidEmailFormat,
+    addActivity,
+    getRooms
+
+};
