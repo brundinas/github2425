@@ -123,6 +123,7 @@ module.exports = {
     checkEmailExists,
     checkValidEmailFormat,
     addActivity,
-    getRooms
+    getRooms,
+    getSubjects
 
 };

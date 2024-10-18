@@ -38,6 +38,16 @@ function checkLoggedIn(req, res, next) {
     }
 }
 
+
+function checkAdmin(req, res, next) {
+    if (req.session.loggedIn & req.session.user.role == 'Administrator') { 
+        return next();
+    } else {
+        res.redirect('/app.html');
+    }
+}
+
+
 // Rute for innlogging
 app.post('/login', async (req, res) => {
     const { email, password } = req.body;
@@ -46,7 +56,7 @@ app.post('/login', async (req, res) => {
     
     // Finn brukeren basert på brukernavn
     const user = await sqlm.getUserByEmail(email); // Ensure this returns a promise
-    
+    console.log(user);
     if (!user) {
         return res.status(401).send('Ugyldig brukernavn');
     }
@@ -58,7 +68,11 @@ app.post('/login', async (req, res) => {
         // Lagre innloggingsstatus i session
         req.session.loggedIn = true;
         req.session.user = user;
-        res.sendFile(path.join(staticPath, 'app.html'));
+        if (user.role == 'Administrator') {
+            res.redirect('/admin'); // Ensure the correct path to the admin HTML file
+        } else {
+            res.sendFile(path.join(staticPath, 'app.html'));
+        }
     } else {
         return res.status(401).send('Ugyldig passord');
     }
@@ -78,7 +92,7 @@ app.get('/', checkLoggedIn, (req, res) => {
     res.sendFile(path.join(staticPath, 'app.html'));
 });
 
-app.get('/admin/', checkLoggedIn, (req, res) => {
+app.get('/admin/', checkLoggedIn, checkAdmin, (req, res) => {
     console.log('admin');
     res.sendFile(path.join(staticPath, 'admin', 'index.html')); // Ensure the correct path to the admin HTML file
 });
