@@ -175,20 +175,11 @@ app.get('/getsubjects/', (req, resp) => {
 })
 
 
-app.get('/getactivites/', checkLoggedIn,(req, resp) => {
+app.get('/getactivities/', checkLoggedIn,(req, res) => {
     console.log('/getactivities/')
-    const idUser = 1
-    const sql = db.prepare(`SELECT starttime, room.name as rom, subject.name as fag, status.name as status
-                            FROM activity
-                            inner join room on room.id = activity.idRoom
-                            inner join subject on subject.id = activity.idSubject
-                            inner join user on user.id = activity.idUser
-                            inner join status on status.id = activity.idStatus
-                            where user.id = ?`);
-    let activities = sql.all(idUser)   
-    console.log("users.length", activities.length)
-    
-    resp.send(activities)
+    const activities = sqlm.getActivities(req.session.user.userid)
+    console.log(activities)
+    res.send(activities)
 })
 
 app.use(express.static(staticPath));
