@@ -11,10 +11,11 @@ document.getElementById('loginForm').addEventListener('submit', async (event) =>
             },
             body: JSON.stringify({ email, password })
         });
-
+        console.log(response)
         if (response.ok) {
+            console.log(response)
             sessionStorage.setItem('loggedIn', 'true');
-            window.location.href = '/app.html';
+            window.location.href = response.url;
         } else {
             alert('Login failed');
         }

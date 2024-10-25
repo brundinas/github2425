@@ -64,14 +64,15 @@ app.post('/login', async (req, res) => {
     // Sjekk om passordet samsvarer med hash'en i databasen
     const isMatch = await bcrypt.compare(password, user.password);
 
-    if (isMatch) {
+    if (isMatch  && !req.session.loggedIn) {
         // Lagre innloggingsstatus i session
         req.session.loggedIn = true;
         req.session.user = user;
+
         if (user.role == 'Administrator') {
             res.redirect('/admin'); // Ensure the correct path to the admin HTML file
         } else {
-            res.sendFile(path.join(staticPath, 'app.html'));
+            res.redirect('/');
         }
     } else {
         return res.status(401).send('Ugyldig passord');
@@ -79,14 +80,6 @@ app.post('/login', async (req, res) => {
 });
 
 
-// Beskyttet rute som krever at brukeren er innlogget
-app.get('/dashboard', (req, res) => {
-    if (req.session.loggedIn) {
-        res.send(`Velkommen, ${req.session.username}!`);
-    } else {
-        res.status(403).send('Du må være logget inn for å se denne siden.');
-    }
-});
 
 app.get('/', checkLoggedIn, (req, res) => {
     res.sendFile(path.join(staticPath, 'app.html'));
@@ -103,8 +96,11 @@ app.get('/logout', (req, res) => {
     res.redirect('/');
 });
 
-app.post('/addactivity/', checkLoggedIn,(req, res) => {
+app.post('/addactivity/', (req, res) => {
     // Insert new activity
+    if (!req.session.loggedIn){
+        return res.json({ error: 'Not logged in' });
+    }
     const { idUser, idRoom, idSubject } = req.body;
     console.log('addactivity', req.body)
     const newActivity = sqlm.addActivity(idUser, idRoom, idSubject);
@@ -120,10 +116,12 @@ app.post('/addactivity/', checkLoggedIn,(req, res) => {
 
 
 
-app.post('/adduser', checkLoggedIn,(req, res) => {
+app.post('/adduser',(req, res) => {
     const { firstName, lastName, email } = req.body;
 
-    // Validate email format and check if email already exists
+    if (!req.session.loggedIn){
+        return res.json({ error: 'Not logged in' });
+    }
     if (!sqlm.checkValidEmailFormat(email)) {
         return res.json({ error: 'Invalid email format.' });
     }
@@ -151,32 +149,43 @@ app.post('/adduser', checkLoggedIn,(req, res) => {
 
 
 
-app.get('/getusers/', checkLoggedIn, (req, resp) => {
+app.get('/getusers/', (req, res) => {
     console.log('/getusers/')
-
+    if (!req.session.loggedIn){
+        return res.json({ error: 'Not logged in' });
+    }
     const users = sqlm.getUsers
     
-    resp.send(users)
+    res.send(users)
 })
 
-app.get('/getrooms/', (req, resp) => {
+app.get('/getrooms/', (req, res) => {
+    if (!req.session.loggedIn){
+        return res.json({ error: 'Not logged in' });
+    }
     console.log('/getrooms/')
     rooms = sqlm.getRooms()
     
-    resp.send(rooms)
+    res.send(rooms)
 })
 
-app.get('/getsubjects/', (req, resp) => {
+app.get('/getsubjects/', (req, res) => {
     console.log('/getsubjects/')
+    if (!req.session.loggedIn){
+        return res.json({ error: 'Not logged in' });
+    }
     subjects = sqlm.getSubjects()
 
     
-    resp.send(subjects)
+    res.send(subjects)
 })
 
 
-app.get('/getactivities/', checkLoggedIn,(req, res) => {
+app.get('/getactivities/', (req, res) => {
     console.log('/getactivities/')
+    if (!req.session.loggedIn){
+        return res.json({ error: 'Not logged in' });
+    }
     const activities = sqlm.getActivities(req.session.user.userid)
     console.log(activities)
     res.send(activities)
@@ -184,5 +193,5 @@ app.get('/getactivities/', checkLoggedIn,(req, res) => {
 
 app.use(express.static(staticPath));
 app.listen(3000, () => {
-    console.log('Server is running on http://localhost:3000');
+    console.log('Server is running on http://localhost:3000/');
 })
