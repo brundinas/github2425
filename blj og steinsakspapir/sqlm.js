@@ -22,28 +22,28 @@ function addUser(firstName, lastName, idRole, isAdmin, email)
  {
 
 
-    sql = global.db.prepare("INSERT INTO user (firstName, lastName, idRole, isAdmin, email) " +
+    sql = global.db.prepare("INSERT INTO user (firstName, lastName, username, isAdmin) " +
                          "values (?, ?, ?, ?, ?)")
-    const info = sql.run(firstName, lastName, idRole, isAdmin, email)
+    const info = sql.run(firstName, lastName, getUserByUsername, isAdmin, email)
     
-    sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
-        'FROM user inner join role on user.idrole = role.id   WHERE user.id  = ?');
+    sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, username, isadmin' + 
+        'FROM user  WHERE user.id  = ?');
     let row = sql.all(info.lastInsertRowid)  
     console.log('row inserted', rows[0])
 
     return row
 }
 
-function getUserByEmail(email) {
-    const sql = global.db.prepare('SELECT user.id as userid, password, firstname, lastname, role.name  as role ' + 
-        'FROM user inner join role on user.idrole = role.id  WHERE email = ?');
+function getUserByUsername(email) {
+    const sql = global.db.prepare('SELECT user.id as userid, password, firstname, lastname, username ' + 
+        'FROM user  WHERE username = ?');
     let user = sql.get(email)   
     return user
 }
 
 function getUser(id) {
-    const sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
-        'FROM user inner join role on user.idrole = role.id  WHERE user.id = ?');
+    const sql = global.db.prepare('SELECT user.id as userid, username, firstname, lastname ' + 
+        'FROM user WHERE user.id = ?');
     let user = sql.get(id)   
     return user
 }
@@ -90,7 +90,7 @@ return row
 
 module.exports = {
     getUser,
-    getUserByEmail,
+    getUserByUsername,
     getUsers,
     addUser,
     checkEmailExists,

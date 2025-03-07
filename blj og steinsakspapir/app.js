@@ -3,6 +3,7 @@ const express = require("express");
 const session = require("express-session");
 const path = require("path");
 const sqlm = require('./sqlm.js');
+const bcrypt = require("bcrypt")
 
 const app = express();
 
@@ -22,18 +23,31 @@ app.use(session({
 const users = [{ username: "player1", password: "password123" }];
 
 // Login Route
-app.post("/login", (req, res) => {
+
+app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-  console.log(username, password);
-  //const user = users.find(u => u.username === username && u.password === password);
-  const user = users[0]
+
+  const user = await findUser(username, password);
+
   if (user) {
-    req.session.user = { username };
-    res.json({ message: "Login successful" });
+    req.session.user = user;
+    res.redirect("/app.html"); // Redirect on successful login
   } else {
-    res.status(401).json({ message: "Invalid credentials" });
+    res.status(401).send("Invalid credentials");
   }
 });
+
+async function findUser(username, password) {
+  // Replace this with actual database query
+  // For demonstration purposes, we're returning a hardcoded user
+  let user = await sqlm.getUserByUsername(username); // Ensure this returns a promise
+  console.log(user);
+  // Sjekk om passordet samsvarer med hash'en i databasen
+  if (!(user && await bcrypt.compare(password, user.password))){
+    user = null
+  }
+  return user;
+}
 
 // Logout Route
 app.post("/api/logout", (req, res) => {
@@ -65,7 +79,7 @@ app.get("/playgame/", requireLogin, (req, res) => {
   res.sendFile(gamePath);
 });
 
-app.get('/', (req, res) => {
+app.get('/', requireLogin, (req, res) => {
     res.sendFile(path.join(staticPath, 'app.html'));
 });
 
