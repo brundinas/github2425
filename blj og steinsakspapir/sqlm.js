@@ -41,6 +41,13 @@ function getUserByUsername(email) {
     return user
 }
 
+function getUserByName(navn) {
+    const sql = global.db.prepare('SELECT id, passord, navn, sistaktiv, spillvunnet ' + 
+        'FROM bruker  WHERE navn = ?');
+    let user = sql.get(navn)   
+    return user
+}
+
 function getUser(id) {
     const sql = global.db.prepare('SELECT user.id as userid, username, firstname, lastname ' + 
         'FROM user WHERE user.id = ?');
@@ -76,14 +83,25 @@ function getGames() {
     return games
 }
 
-function addResult(idUser, idGame, result) {
-    sql = global.db.prepare("INSERT INTO leaderboard (idUser, idGame, idResult) " +
-        "values (?, ?, ?)")
-const info = sql.run(idUser, idGame, result)
+function getLeaderboard() {
+    console.log('getLeaderboard')
+    const sql = global.db.prepare('select game.name as game, count(idGame) as countPlayed, sum(won) as score, idUser, username ' +
+                'from activity ' +
+                'inner join user on idUser = user.id ' +
+                'inner join game on idGame = game.id ' +
+                'group by idUser, idGame, game.name')
+    let leaderboard = sql.all()  
+    return leaderboard
+}
 
 
+function postResult(idUser, game, result) {
+    const sqlgameid = global.db.prepare('select id from game where url = ?')
+    const gameid = sqlgameid.all(game)  
+    const sql = global.db.prepare("INSERT INTO activity (idUser, timeplayed, idGame, won) " +
+        "values (?, CURRENT_TIMESTAMP, ?, ?)")
+const info = sql.run(idUser, gameid[0].id, result)
 
-return row
 }
 
 
@@ -95,7 +113,8 @@ module.exports = {
     addUser,
     checkEmailExists,
     checkValidEmailFormat,
-    addResult,
+    postResult,
+    getLeaderboard,
     getGames
 
 };

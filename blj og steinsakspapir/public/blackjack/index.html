@@ -4,16 +4,22 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
-    <script type="text/javascript" src="/tic-tac-toe/index.js" defer></script>
+    <link rel="stylesheet" href="/style.css">
+    <script type="text/javascript" src="/blacjack/index.js" defer></script>
     <script type="text/javascript" src="/regresults.js" defer></script>
 </head>
 <body>
     <h1>Blackjack</h1>
-    <form id= "frmResult" method="post">
+    <form id="frmResult" method="post" action="/postresult/">
+        <label for="game">Game:</label>
+        <input type="text" id="game" name="game" required>
+    
         <label for="result">Result:</label>
         <input type="number" id="result" name="result" required>
+    
         <button type="submit">Submit</button>
     </form>
-    <button id="btnPlay" type="button">Play</button>
+    
+    <button id="btnPlay" label = "BlackJack" type="button">Play</button>
 </body>
 </html>

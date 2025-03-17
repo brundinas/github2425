@@ -38,9 +38,8 @@ app.post("/login", async (req, res) => {
 });
 
 async function findUser(username, password) {
-  // Replace this with actual database query
-  // For demonstration purposes, we're returning a hardcoded user
-  let user = await sqlm.getUserByUsername(username); // Ensure this returns a promise
+
+  const user = await sqlm.getUserByUsername(username); // Ensure this returns a promise
   console.log(user);
   // Sjekk om passordet samsvarer med hash'en i databasen
   if (!(user && await bcrypt.compare(password, user.password))){
@@ -50,15 +49,15 @@ async function findUser(username, password) {
 }
 
 // Logout Route
-app.post("/api/logout", (req, res) => {
+app.post("/logout", (req, res) => {
   req.session.destroy();
   res.json({ message: "Logged out" });
 });
 
 // Middleware to check if user is logged in
 function requireLogin(req, res, next) {
-  console.log(req.session.user)  
-  if (!req.session.user) {
+   
+  if ( !req.session || !req.session.user) {
     return res.redirect("/login.html"); // Redirect to login page
   }
   next();
@@ -72,12 +71,30 @@ app.get('/getgames', requireLogin, async (req, res) => {
     res.send(games)
   });
 
+  app.get('/getleaderboard', requireLogin, async (req, res) => {
+    console.log('/getleaderboard/')
+
+    const leaderBoard = sqlm.getLeaderboard()
+    
+    res.send(leaderBoard)
+  });
+
 // Protected Game Route (ensures only logged-in users can access games)
 app.get("/playgame/", requireLogin, (req, res) => {
   const game = req.query.game
   const gamePath = path.join(__dirname, "public", game, "index.html");
   res.sendFile(gamePath);
 });
+
+app.post("/postresult/", requireLogin, (req, res) => {
+  const { game, win } = req.body;
+  console.log(game, "win", win)
+  sqlm.postResult(req.session.user.userid, game, win)
+  //res.sendFile(path.join(staticPath, 'app.html'));
+  return res.redirect("/"); 
+  
+});
+
 
 app.get('/', requireLogin, (req, res) => {
     res.sendFile(path.join(staticPath, 'app.html'));

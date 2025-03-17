@@ -8,6 +8,9 @@ body {
     background-color: #f0f0f0;
 }
 
+#frmResult {
+    display: none;
+}
 .container {
     background-color: white;
     padding: 20px;
