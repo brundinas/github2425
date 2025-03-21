@@ -11,6 +11,11 @@ body {
 #frmResult {
     display: none;
 }
+
+#formRegister {
+    display: none;
+}
+
 .container {
     background-color: white;
     padding: 20px;

@@ -18,38 +18,41 @@ global.db  = sqlite3('./leaderboard.db', {verbose: console.log})
 
 }
 
-function addUser(firstName, lastName, idRole, isAdmin, email)
+function addUser(username, password, isAdmin)
  {
-
-
-    sql = global.db.prepare("INSERT INTO user (firstName, lastName, username, isAdmin) " +
-                         "values (?, ?, ?, ?, ?)")
-    const info = sql.run(firstName, lastName, getUserByUsername, isAdmin, email)
+    try {
+    sql = global.db.prepare("INSERT INTO user (username, password, isAdmin) " +
+                         "values (?, ?, ?)")
+    const info = sql.run(username, password, isAdmin)
     
-    sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, username, isadmin' + 
+
+    sql = global.db.prepare('SELECT id as userid, username, isadmin' + 
         'FROM user  WHERE user.id  = ?');
     let row = sql.all(info.lastInsertRowid)  
     console.log('row inserted', rows[0])
 
     return row
+    } catch (err) {
+        if (err.code === 'SQLITE_CONSTRAINT' || err.code === 'SQLITE_CONSTRAINT_UNIQUE' ) {
+            console.error('Error: Duplicate username.');
+            return { error: 'Brukernavn finnes allerede' };
+        } else {
+            console.error('Database error:', err);
+            return { error: 'Database error' };
+        }
+    }
 }
 
-function getUserByUsername(email) {
-    const sql = global.db.prepare('SELECT user.id as userid, password, firstname, lastname, username ' + 
+function getUserByUsername(username) {
+    const sql = global.db.prepare('SELECT user.id as userid, password, username, isAdmin ' + 
         'FROM user  WHERE username = ?');
-    let user = sql.get(email)   
+    let user = sql.get(username)   
     return user
 }
 
-function getUserByName(navn) {
-    const sql = global.db.prepare('SELECT id, passord, navn, sistaktiv, spillvunnet ' + 
-        'FROM bruker  WHERE navn = ?');
-    let user = sql.get(navn)   
-    return user
-}
 
 function getUser(id) {
-    const sql = global.db.prepare('SELECT user.id as userid, username, firstname, lastname ' + 
+    const sql = global.db.prepare('SELECT user.id as userid, username, isAdmin ' + 
         'FROM user WHERE user.id = ?');
     let user = sql.get(id)   
     return user
@@ -96,7 +99,7 @@ function getLeaderboard() {
 
 
 function postResult(idUser, game, result) {
-    const sqlgameid = global.db.prepare('select id from game where url = ?')
+    const sqlgameid = global.db.prepare('select id from game where url = lower(?)')
     const gameid = sqlgameid.all(game)  
     const sql = global.db.prepare("INSERT INTO activity (idUser, timeplayed, idGame, won) " +
         "values (?, CURRENT_TIMESTAMP, ?, ?)")

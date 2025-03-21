@@ -8,13 +8,34 @@
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div id="loginContainer">
     <div id="loginForm">
         <h2>Login</h2>
         <input type="text" id="username" placeholder="Username">
         <input type="password" id="password" placeholder="Password">
-        <button id="btnLogin">Login</button>
-        <p class="error-message" id="errorMsg">Invalid credentials. Please try again.</p>
+        <button id="btnLogin">Log inn</button>
+        <p>Ny bruker? <a href="#" id="btnShowRegister">Registrer her</a></p>
       </div>
     
+      <form action="/login" method="POST">
+        <label for="username">Brukernavn:</label>
+        <input type="text" id="username" name="username" required>
+        
+        <label for="password">Passord:</label>
+        <input type="password" id="password" name="password" required>
+        
+        <button type="submit">Logg inn</button>
+      </form>
+  </div>
+
+      <div id="formRegister">
+        <h2>Register</h2>
+        <input type="text" id="regusername" placeholder="Username">
+        <input type="password" id="regpassword" placeholder="Password">
+        <button id="btnRegister">Registrer</button>
+
+      </div>
+    
+      <p class="error-message" id="errorMsg"></p>
 </body>
 </html>

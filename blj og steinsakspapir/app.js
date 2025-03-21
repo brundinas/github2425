@@ -4,13 +4,14 @@ const session = require("express-session");
 const path = require("path");
 const sqlm = require('./sqlm.js');
 const bcrypt = require("bcrypt")
-
 const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 const staticPath = path.join(__dirname, 'public');
-app.use(express.static(path.join(__dirname, "public")));
+app.use(express.static(staticPath))
+
+//app.use(express.static(path.join(__dirname, "public")));
 
 app.use(session({
   secret: process.env.SECRET_KEY,  
@@ -26,26 +27,49 @@ const users = [{ username: "player1", password: "password123" }];
 
 app.post("/login", async (req, res) => {
   const { username, password } = req.body;
-
+  console.log(req.body)
   const user = await findUser(username, password);
 
   if (user) {
+    user.password = ""
     req.session.user = user;
     res.redirect("/app.html"); // Redirect on successful login
   } else {
-    res.status(401).send("Invalid credentials");
+    res.status(401).send({ error: 'Ugyldig passord eller brukernavn'});
+  }
+});
+
+app.post("/registeruser", async (req, res) => {
+  const { username, password } = req.body;
+  console.log(req.body)
+  const result = await registerUser(username, password);
+
+  if (!result.error) {
+    req.session.user = result;
+    res.redirect("/app.html"); // Redirect on successful login
+  } else {
+    res.status(401).send(result);
   }
 });
 
 async function findUser(username, password) {
 
-  const user = await sqlm.getUserByUsername(username); // Ensure this returns a promise
+  let user = await sqlm.getUserByUsername(username); // Ensure this returns a promise
   console.log(user);
   // Sjekk om passordet samsvarer med hash'en i databasen
-  if (!(user && await bcrypt.compare(password, user.password))){
+  if ((!user && !await bcrypt.compare(password, user.password))){
     user = null
   }
-  return user;
+  return user[0];
+}
+
+async function registerUser(username, password) {
+  
+  const saltRounds = 10;
+  const hashedPassword = await bcrypt.hash(password, saltRounds)
+  const result = await sqlm.addUser(username, hashedPassword, 0); // Ensure this returns a promise
+  console.log(result);
+  return result;
 }
 
 // Logout Route
