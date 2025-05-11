@@ -74,16 +74,41 @@ function checkValidEmailFormat(email) {
 function getUsers() {
     const sql = global.db.prepare('SELECT user.id as userid, firstname, lastname, role.name  as role ' + 
         'FROM user inner join role on user.idrole = role.id ');
-    let users = sql.all()   
+    const users = sql.all()   
     return users
 }
 
 
 function getGames() {
-    console.log('getGames')
     const sql = global.db.prepare('select id, name, url  from game');
-    let games = sql.all()  
+    const games = sql.all()  
     return games
+}
+
+function getLogs() {
+    const sql = global.db.prepare(`
+        SELECT usage_log.*, user.username
+        FROM usage_log
+        LEFT JOIN user ON usage_log.user_id = user.id
+        ORDER BY timestamp DESC LIMIT 100
+      `)
+      const logs = sql.all()  
+    return logs
+}
+
+function log(req){
+    sql = global.db.prepare(`
+        INSERT INTO usage_log (user_id, session_id, ip, path, method)
+        VALUES (?, ?, ?, ?, ?)
+      `);
+    
+      logStmt.run(
+        req.session.user.userid,
+        req.sessionID,
+        req.ip, 
+        req.path,
+        req.method
+      );
 }
 
 function getLeaderboard() {
@@ -93,7 +118,7 @@ function getLeaderboard() {
                 'inner join user on idUser = user.id ' +
                 'inner join game on idGame = game.id ' +
                 'group by idUser, idGame, game.name')
-    let leaderboard = sql.all()  
+    const leaderboard = sql.all()  
     return leaderboard
 }
 
@@ -107,7 +132,9 @@ const info = sql.run(idUser, gameid[0].id, result)
 
 }
 
-
+function getDB() {
+    return global.db;
+}
 
 module.exports = {
     getUser,
@@ -118,6 +145,10 @@ module.exports = {
     checkValidEmailFormat,
     postResult,
     getLeaderboard,
-    getGames
+    getGames,
+    getLogs,
+    log
 
 };
+
+

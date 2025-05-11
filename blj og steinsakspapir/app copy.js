@@ -8,6 +8,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.set('trust proxy', true); // Important if behind a reverse proxy (e.g. Nginx)
 
 
 
@@ -21,7 +22,20 @@ app.use(session({
 
 app.use((req, res, next) => {
   if (!req.session || !req.session.user) return next(); // Skip if not logged in
-  sqlm.log(req)
+  console.log('req.ip', req.ip)
+  const logStmt = sqlm.getDB().prepare(`
+    INSERT INTO usage_log (user_id, session_id, ip, path, method)
+    VALUES (?, ?, ?, ?, ?)
+  `);
+
+  logStmt.run(
+    req.session.user.userid,
+    req.sessionID,
+    req.ip, 
+    req.path,
+    req.method
+  );
+
   next();
 });
 
@@ -34,6 +48,7 @@ app.post("/login", async (req, res) => {
   if (user) {
     user.password = ""
     req.session.user = user;
+    res.status(200) //OK
     res.redirect("/app.html"); // Redirect on successful login
   } else {
     res.status(401).send({ error: 'Ugyldig passord eller brukernavn'});
@@ -148,13 +163,14 @@ app.get('/', requireLogin, (req, res) => {
 
 app.get('/admin/logs', requireLogin, requireAdmin, (req, res) => {
 
-  try {
-    const logs = sqlm.getLogs();
-    res.send(logs);
-  } catch (err) {
-    res.status(500).send({ error: "Server error" });
-  }
-  
+  const logs = sqlm.getDB().prepare(`
+    SELECT usage_log.*, user.username
+    FROM usage_log
+    LEFT JOIN user ON usage_log.user_id = user.id
+    ORDER BY timestamp DESC LIMIT 100
+  `).all();
+
+  res.json(logs);
 });
 
 const staticPath = path.join(__dirname, 'public');
