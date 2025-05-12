@@ -97,12 +97,12 @@ function getLogs() {
 }
 
 function log(req){
-    sql = global.db.prepare(`
+    const sql = global.db.prepare(`
         INSERT INTO usage_log (user_id, session_id, ip, path, method)
         VALUES (?, ?, ?, ?, ?)
       `);
     
-      logStmt.run(
+      sql.run(
         req.session.user.userid,
         req.sessionID,
         req.ip, 
