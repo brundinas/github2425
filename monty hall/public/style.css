@@ -1,0 +1,10 @@
+#doors {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+  }
+  .door {
+    padding: 1rem;
+    font-size: 1.5rem;
+  }
+  
